@@ -2,25 +2,25 @@
   "name": "sistema-universidade-web2",
   "version": "1.0.0",
   "description": "API do Sistema Universitário Web2 (Node.js + TypeScript + JavaScript)",
-  "main": "dist/server.js",
+  "main": "dist/serve.js",
   "license": "ISC",
   "type": "commonjs",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/serve.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "prisma": "npx prisma"
+    "start": "node dist/serve.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.19",
-    "prisma": "^6.2.1",
+    "@types/pg": "^8.15.6",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }

@@ -1,18 +1,13 @@
 import { User } from "../models/User";
-import { UserTypes } from "../models/types/UserTypes";
+import { UserType } from "../models/types/UserTypes";
 
 export class UserRepository {
-  async createUser(
-    name: string,
-    email: string,
-    password: string,
-    type: UserTypes,
-  ) {
+  async createUser(nome: string, email: string, senha: string, tipo: UserType) {
     const user = await User.create({
-      name,
+      nome,
       email,
-      password,
-      type,
+      senha,
+      tipo,
     });
 
     return user;

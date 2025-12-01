@@ -1,15 +1,89 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id         Int       @id @default(autoincrement())
+  nome       String
+  email      String    @unique
+  senha      String
+  papeis     UsuarioPapel[]
+  turmas     Turma[]   @relation("ProfessorTurmas")
+  matriculas Matricula[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+model Papel {
+  id       Int           @id @default(autoincrement())
+  nome     String
+  usuarios UsuarioPapel[]
+}
+
+model UsuarioPapel {
+  id       Int     @id @default(autoincrement())
+  usuario  Usuario @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  papel    Papel   @relation(fields: [papelId], references: [id])
+  papelId   Int
+
+  @@unique([usuarioId, papelId])
+}
+
+model Curso {
+  id         Int         @id @default(autoincrement())
+  nome       String
+  descricao  String?
+  disciplinas Disciplina[]
+}
+
+model Disciplina {
+  id         Int     @id @default(autoincrement())
+  nome       String
+  codigo     String  @unique
+  cargaHoraria Int
+  curso      Curso   @relation(fields: [cursoId], references: [id])
+  cursoId    Int
+  turmas     Turma[]
+}
+
+model Turma {
+  id           Int       @id @default(autoincrement())
+  codigo       String
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id])
+  disciplinaId Int
+  professor    Usuario    @relation("ProfessorTurmas", fields: [professorId], references: [id])
+  professorId  Int
+  periodo      String
+  matriculas   Matricula[]
+}
+
+model Matricula {
+  id        Int       @id @default(autoincrement())
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  turma     Turma     @relation(fields: [turmaId], references: [id])
+  turmaId   Int
+  notas     Nota[]
+  frequencias Frequencia[]
+}
+
+model Nota {
+  id         Int       @id @default(autoincrement())
+  matricula  Matricula @relation(fields: [matriculaId], references: [id])
+  matriculaId Int
+  valor      Float
+  etapa      String
+}
+
+model Frequencia {
+  id         Int       @id @default(autoincrement())
+  matricula  Matricula @relation(fields: [matriculaId], references: [id])
+  matriculaId Int
+  data       DateTime
+  presente   Boolean
 }

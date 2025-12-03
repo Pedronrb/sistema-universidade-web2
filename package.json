@@ -10,7 +10,8 @@
     "start": "node src/server.js",
     "prisma": "npx prisma",
     "prisma:migrate": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/universidade?schema=public\" npx prisma migrate dev",
-    "prisma:studio": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/universidade?schema=public\" npx prisma studio"
+    "prisma:studio": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/universidade?schema=public\" npx prisma studio",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@prisma/client": "^4.16.2",
@@ -21,7 +22,11 @@
     "prisma": "^4.16.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "babel-jest": "^29.7.0",
     "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.0"
   }
 }

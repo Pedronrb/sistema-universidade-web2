@@ -7,6 +7,7 @@ import userRoutes from "./modules/user/userRoutes.js";
 import turmaRoutes from "./modules/turma/turmaRoutes.js";
 import cursoRoutes from "./modules/curso/cursoRoutes.js";
 import disciplinaRoutes from "./modules/disciplina/disciplinaRoutes.js";
+import papelRoutes from "./modules/papel/papelRoutes.js";
 
 // Importa middleware de erro
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
@@ -30,6 +31,7 @@ app.use("/users", userRoutes);
 app.use("/cursos", cursoRoutes);
 app.use("/disciplinas", disciplinaRoutes);
 app.use("/turmas", turmaRoutes);
+app.use("/papeis", papelRoutes);
 
 // Middleware de erro (depois das rotas!!!!!)
 app.use(errorMiddleware);

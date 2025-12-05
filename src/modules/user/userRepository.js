@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js";
 
 export const userRepository = {
   // Listar todos os usuários

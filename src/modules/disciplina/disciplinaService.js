@@ -1,98 +1,77 @@
 import { disciplinaRepository } from "./disciplinaRepository.js";
-import { cursoService } from "../curso/cursoService.js"; // <--- NOVO IMPORT
-import { HttpError } from "../../middlewares/HttpError.js";
 
 class DisciplinaService {
-  
-  async getById(id) {
-    const disciplina = await disciplinaRepository.findById(id);
-
-    if (!disciplina) {
-      throw new HttpError(404, "Disciplina não encontrada");
-    }
-
-    return disciplina;
-  }
-  
   async createDisciplina(data) {
     const { nome, codigo, cargaHoraria, cursoId } = data;
 
     if (!nome || !codigo || !cargaHoraria || !cursoId) {
-      throw new HttpError(400, "Todos os campos são obrigatórios: nome, codigo, cargaHoraria, cursoId.");
-    }
-    
-    const idCursoInt = Number.parseInt(cursoId);
-    if (Number.isNaN(idCursoInt)) {
-        throw new HttpError(400, "cursoId inválido. Deve ser um número.");
+      throw new Error("Todos os campos são obrigatórios");
     }
 
-    try {
-        await cursoService.getById(idCursoInt);
-    } catch (error) {
-        if (error instanceof HttpError && error.status === 404) {
-            throw new HttpError(404, `Curso com ID ${cursoId} não encontrado. Não é possível criar a disciplina.`);
-        }
-        throw error;
-    }
+    const disciplinaExiste = await disciplinaRepository.getByCodigo(codigo);
 
-    const disciplinaExiste = await disciplinaRepository.findByCodigo(codigo);
     if (disciplinaExiste) {
-      throw new HttpError(409, "Já existe uma disciplina com este código");
+      throw new Error("Já existe uma disciplina com este código");
     }
 
     return await disciplinaRepository.create({
       nome,
       codigo,
-      cargaHoraria: Number.parseInt(cargaHoraria),
-      cursoId: idCursoInt,
+      cargaHoraria: parseInt(cargaHoraria),
+      cursoId: parseInt(cursoId),
     });
   }
 
-  
   async listDisciplinas() {
-    return await disciplinaRepository.findAll();
-  }
-  
-  async getDisciplinasByCurso(cursoId) {
-    return await disciplinaRepository.findByCurso(cursoId);
+    return await disciplinaRepository.getAll();
   }
 
-  async updateDisciplinas(id, data) {
-    const disciplinaExiste = await this.getById(id)
+  async getDisciplinaById(id) {
+    const disciplina = await disciplinaRepository.getById(id);
 
-    // Logica do código único
-    if (data.codigo && data.codigo !== disciplinaExiste.codigo) {
-      const codigoEmUso = await disciplinaRepository.findByCodigo(data.codigo);
-      if (codigoEmUso) {
-        throw new HttpError(409, "Já existe uma disciplina com este código");
-      }
+    if (!disciplina) {
+      throw new Error("Disciplina não encontrada");
     }
-    
-    if (data.cursoId) {
-        const novoCursoIdInt = Number.parseInt(data.cursoId);
-        if (Number.isNaN(novoCursoIdInt)) {
-            throw new HttpError(400, "cursoId inválido. Deve ser um número.");
-        }
-        try {
-             await cursoService.getById(novoCursoIdInt);
-        } catch (error) {
-             if (error instanceof HttpError && error.status === 404) {
-                throw new HttpError(404, `Novo Curso ID ${data.cursoId} não encontrado.`);
-             }
-             throw error;
-        }
-        data.cursoId = novoCursoIdInt;
+
+    return disciplina;
+  }
+
+  async listDisciplinasByCurso(cursoId) {
+    return await disciplinaRepository.getByCurso(cursoId);
+  }
+
+  async updateDisciplina(id, data) {
+    const disciplinaExiste = await disciplinaRepository.getById(id);
+
+    if (!disciplinaExiste) {
+      throw new Error("Disciplina não encontrada");
+    }
+
+    if (data.codigo && data.codigo !== disciplinaExiste.codigo) {
+      const codigoEmUso = await disciplinaRepository.getByCodigo(data.codigo);
+      if (codigoEmUso) {
+        throw new Error("Já existe uma disciplina com este código");
+      }
     }
 
     if (data.cargaHoraria) {
-      data.cargaHoraria = Number.parseInt(data.cargaHoraria);
+      data.cargaHoraria = parseInt(data.cargaHoraria);
+    }
+
+    if (data.cursoId) {
+      data.cursoId = parseInt(data.cursoId);
     }
 
     return await disciplinaRepository.update(id, data);
   }
 
   async deleteDisciplina(id) {
-    await this.getById(id);
+    const disciplinaExiste = await disciplinaRepository.getById(id);
+
+    if (!disciplinaExiste) {
+      throw new Error("Disciplina não encontrada");
+    }
+
     return await disciplinaRepository.delete(id);
   }
 }

@@ -20,12 +20,13 @@ async function createWithSpecificRole({ nome, email, senha, papelNome }) {
   let papel;
   try {
     papel = await papelService.getByName(papelNome);
-  } catch (error) { 
+  } catch (error) {
     if (error instanceof HttpError && error.status === 404) {
       const status = papelNome === PAPEL_PADRAO_REGISTRO ? 500 : 400;
-      const message = papelNome === PAPEL_PADRAO_REGISTRO 
-        ? `Erro interno: Papel padrão '${papelNome}' não configurado.`
-        : `Papel '${papelNome}' não encontrado.`;
+      const message =
+        papelNome === PAPEL_PADRAO_REGISTRO
+          ? `Erro interno: Papel padrão '${papelNome}' não configurado.`
+          : `Papel '${papelNome}' não encontrado.`;
       throw new HttpError(status, message);
     }
     throw error;
@@ -37,9 +38,9 @@ async function createWithSpecificRole({ nome, email, senha, papelNome }) {
     nome,
     email,
     senha: hashed,
-    papeis: { 
-      create: { papelId: papel.id }
-    }
+    papeis: {
+      create: { papelId: papel.id },
+    },
   });
 
   const { senha: _, ...rest } = created;
@@ -59,21 +60,21 @@ export const userService = {
 
   // Criar usuário padrão (Aluno)
   async createUser({ nome, email, senha }) {
-    return await createWithSpecificRole({ 
-      nome, 
-      email, 
-      senha, 
-      papelNome: PAPEL_PADRAO_REGISTRO
+    return await createWithSpecificRole({
+      nome,
+      email,
+      senha,
+      papelNome: PAPEL_PADRAO_REGISTRO,
     });
   },
 
   // Criar usuário com papel específico
   async createAdminUser({ nome, email, senha, papelNome }) {
-    return await createWithSpecificRole({ 
-      nome, 
-      email, 
-      senha, 
-      papelNome 
+    return await createWithSpecificRole({
+      nome,
+      email,
+      senha,
+      papelNome,
     });
   },
 
@@ -105,7 +106,5 @@ export const userService = {
 
     await userRepository.delete(id);
     return { message: "Usuário removido com sucesso" };
-  }
+  },
 };
-
-module.exports = { userService };

@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js";
 
 class DisciplinaRepository {
   async create(data) {
@@ -11,7 +11,7 @@ class DisciplinaRepository {
     });
   }
 
-  async findAll() {
+  async getAll() {
     return await prisma.disciplina.findMany({
       include: {
         curso: true,
@@ -20,7 +20,7 @@ class DisciplinaRepository {
     });
   }
 
-  async findById(id) {
+  async getById(id) {
     return await prisma.disciplina.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -30,7 +30,7 @@ class DisciplinaRepository {
     });
   }
 
-  async findByCodigo(codigo) {
+  async getByCodigo(codigo) {
     return await prisma.disciplina.findUnique({
       where: { codigo },
       include: {
@@ -40,7 +40,7 @@ class DisciplinaRepository {
     });
   }
 
-  async findByCurso(cursoId) {
+  async getByCurso(cursoId) {
     return await prisma.disciplina.findMany({
       where: { cursoId: parseInt(cursoId) },
       include: {
@@ -68,4 +68,4 @@ class DisciplinaRepository {
   }
 }
 
-module.exports = new DisciplinaRepository();
+export const disciplinaRepository = new DisciplinaRepository();

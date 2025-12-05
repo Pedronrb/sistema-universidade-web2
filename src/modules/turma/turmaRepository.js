@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js";
 
 class TurmaRepository {
   async create(data) {
@@ -12,7 +12,7 @@ class TurmaRepository {
     });
   }
 
-  async findAll() {
+  async getAll() {
     return await prisma.turma.findMany({
       include: {
         disciplina: true,
@@ -22,7 +22,7 @@ class TurmaRepository {
     });
   }
 
-  async findById(id) {
+  async getById(id) {
     return await prisma.turma.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -37,7 +37,7 @@ class TurmaRepository {
     });
   }
 
-  async findByProfessor(professorId) {
+  async getByProfessor(professorId) {
     return await prisma.turma.findMany({
       where: { professorId: parseInt(professorId) },
       include: {
@@ -48,7 +48,7 @@ class TurmaRepository {
     });
   }
 
-  async findByDisciplina(disciplinaId) {
+  async getByDisciplina(disciplinaId) {
     return await prisma.turma.findMany({
       where: { disciplinaId: parseInt(disciplinaId) },
       include: {
@@ -78,4 +78,4 @@ class TurmaRepository {
   }
 }
 
-module.exports = new TurmaRepository();
+export const turmaRepository = new TurmaRepository();

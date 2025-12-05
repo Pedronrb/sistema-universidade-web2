@@ -1,4 +1,4 @@
-const cursoRepository = require("../curso/cursoRepository");
+import { cursoRepository } from "./cursoRepository.js";
 
 class CursoService {
   async createCurso(data) {
@@ -11,12 +11,12 @@ class CursoService {
     return await cursoRepository.create({ nome, descricao });
   }
 
-  async findAll() {
-    return await cursoRepository.findAll();
+  async listCursos() {
+    return await cursoRepository.getAll();
   }
 
-  async getById(id) {
-    const curso = await cursoRepository.findById(id);
+  async getCursoById(id) {
+    const curso = await cursoRepository.getById(id);
 
     if (!curso) {
       throw new Error("Curso não encontrado");
@@ -26,7 +26,7 @@ class CursoService {
   }
 
   async updateCurso(id, data) {
-    const cursoExiste = await cursoRepository.findById(id);
+    const cursoExiste = await cursoRepository.getById(id);
 
     if (!cursoExiste) {
       throw new Error("Curso não encontrado");
@@ -36,7 +36,7 @@ class CursoService {
   }
 
   async deleteCurso(id) {
-    const cursoExiste = await cursoRepository.findById(id);
+    const cursoExiste = await cursoRepository.getById(id);
 
     if (!cursoExiste) {
       throw new Error("Curso não encontrado");
@@ -46,4 +46,4 @@ class CursoService {
   }
 }
 
-module.exports = new CursoService();
+export const cursoService = new CursoService();

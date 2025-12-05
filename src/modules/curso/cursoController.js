@@ -1,4 +1,4 @@
-const cursoService = require("../curso/cursoService");
+import { cursoService } from "./cursoService.js";
 
 class CursoController {
   async create(req, res) {
@@ -47,4 +47,4 @@ class CursoController {
   }
 }
 
-module.exports = new CursoController();
+export const cursoController = new CursoController();

@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js";
 
 class CursoRepository {
   async create(data) {
@@ -10,7 +10,7 @@ class CursoRepository {
     });
   }
 
-  async findAll() {
+  async getAll() {
     return await prisma.curso.findMany({
       include: {
         disciplinas: true,
@@ -18,7 +18,7 @@ class CursoRepository {
     });
   }
 
-  async findById(id) {
+  async getById(id) {
     return await prisma.curso.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -44,4 +44,4 @@ class CursoRepository {
   }
 }
 
-module.exports = new CursoRepository();
+export const cursoRepository = new CursoRepository();

@@ -1,4 +1,4 @@
-const turmaService = require("../turma/turmaService");
+import { turmaService } from "./turmaService.js";
 
 class TurmaController {
   async create(req, res) {
@@ -69,4 +69,4 @@ class TurmaController {
   }
 }
 
-module.exports = new TurmaController();
+export const turmaController = new TurmaController();

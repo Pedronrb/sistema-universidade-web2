@@ -20,4 +20,17 @@ export const papelRepository = {
       where: { nome },
     });
   },
+
+  async delete(id) {
+    return prisma.papel.delete({
+      where: { id: Number(id) },
+    });
+  },
+
+  async update(id, data) {
+    return prisma.papel.update({
+      where: { id: Number(id) },
+      data,
+    });
+  }
 };

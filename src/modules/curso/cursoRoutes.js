@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const cursoController = require("../curso/cursoController");
+const e = require("express");
 
 router.post("/", cursoController.create);
 router.get("/", cursoController.list);
@@ -9,3 +10,4 @@ router.put("/:id", cursoController.update);
 router.delete("/:id", cursoController.delete);
 
 module.exports = router;
+export default router;

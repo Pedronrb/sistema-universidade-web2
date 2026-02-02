@@ -1,6 +1,6 @@
-const disciplinaService = require("../disciplina/disciplinaService");
+import { disciplinaService } from "./disciplinaService.js";
 
-class DisciplinaController {
+export class DisciplinaController {
   async create(req, res) {
     try {
       const disciplina = await disciplinaService.createDisciplina(req.body);
@@ -22,7 +22,7 @@ class DisciplinaController {
   async getById(req, res) {
     try {
       const disciplina = await disciplinaService.getDisciplinaById(
-        req.params.id,
+        req.params.id
       );
       return res.status(200).json(disciplina);
     } catch (error) {
@@ -33,7 +33,7 @@ class DisciplinaController {
   async getByCurso(req, res) {
     try {
       const disciplinas = await disciplinaService.getDisciplinasByCurso(
-        req.params.cursoId,
+        req.params.cursoId
       );
       return res.status(200).json(disciplinas);
     } catch (error) {
@@ -45,7 +45,7 @@ class DisciplinaController {
     try {
       const disciplina = await disciplinaService.updateDisciplinas(
         req.params.id,
-        req.body,
+        req.body
       );
       return res.status(200).json(disciplina);
     } catch (error) {
@@ -63,4 +63,4 @@ class DisciplinaController {
   }
 }
 
-module.exports = new DisciplinaController();
+export const disciplinaController = new DisciplinaController();

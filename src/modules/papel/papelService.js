@@ -34,5 +34,19 @@ export const papelService = {
     }
     return papel;
   },
-  // Adicionar update e delete futuramente.
+  
+  async deleteById(id) {
+    const papel = await papelRepository.findById(id);
+    if(!papel) {
+      throw new HttpError(404, "Papel não encontrado.");
+    }
+    await papelRepository.delete(id);
+  },
+  async updateById(id, { nome }) {
+    const papel = await papelRepository.findById(id);
+    if(!papel) {
+      throw new HttpError(404, "Papel não encontrado.");
+    }
+    await papelRepository.update(id, { nome });
+  }
 };

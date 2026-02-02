@@ -37,4 +37,24 @@ export const papelController = {
       next(err);
     }
   },
+
+  async deleteById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const deleted = await papelService.deleteById(id);
+      return res.status(200).json(deleted);
+    } catch (err) {
+      next(err);
+    }
+  },
+  async updateById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { nome } = req.body;
+      const updated = await papelService.updateById(id, { nome });
+      return res.status(200).json(updated);
+    } catch (err) {
+      next(err);
+    }
+  },
 };

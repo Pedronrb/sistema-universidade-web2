@@ -10,4 +10,8 @@ router.get("/papeis", papelController.listAll);
 
 router.get("/papeis/:id", papelController.getById);
 
+router.delete("/papeis/:id", papelController.deleteById);
+
+router.put("/papeis/:id", papelController.updateById);
+
 export default router;

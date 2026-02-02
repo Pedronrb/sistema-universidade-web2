@@ -8,6 +8,7 @@ import turmaRoutes from "./modules/turma/turmaRoutes.js";
 import cursoRoutes from "./modules/curso/cursoRoutes.js";
 import disciplinaRoutes from "./modules/disciplina/disciplinaRoutes.js";
 import papelRoutes from "./modules/papel/papelRoutes.js";
+import authRoutes from "./modules/auth/authRoutes.js";
 
 // Importa middleware de erro
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
@@ -32,9 +33,7 @@ app.use("/cursos", cursoRoutes);
 app.use("/disciplinas", disciplinaRoutes);
 app.use("/turmas", turmaRoutes);
 app.use("/papeis", papelRoutes);
-
-// Middleware de erro (depois das rotas!!!!!)
-app.use(errorMiddleware);
+app.use("/auth", authRoutes);
 
 // Middleware final: rota não encontrada
 app.use((req, res) => {
@@ -43,5 +42,8 @@ app.use((req, res) => {
     error: "Rota não encontrada",
   });
 });
+
+// Middleware de erro (depois das rotas!!!!!)
+app.use(errorMiddleware);
 
 export default app;

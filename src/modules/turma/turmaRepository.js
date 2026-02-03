@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js";
 
 class TurmaRepository {
   async create(data) {

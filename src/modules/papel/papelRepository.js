@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js"; 
 
 export const papelRepository = {
   async create(data) {
@@ -15,9 +15,18 @@ export const papelRepository = {
     });
   },
 
+  /**
+   * Ajuste Sênior: Usamos findFirst com 'mode: insensitive'.
+   * Isso resolve o erro 500 (falta de índice unique) e o 404 (erro de maiúsculas).
+   */
   async findByName(nome) {
-    return prisma.papel.findUnique({
-      where: { nome },
+    return prisma.papel.findFirst({
+      where: { 
+        nome: {
+          equals: nome,
+          mode: 'insensitive'
+        } 
+      },
     });
   },
 

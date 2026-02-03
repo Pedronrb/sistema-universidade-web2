@@ -7,21 +7,14 @@ export const userController = {
   async listAll(req, res, next) {
     try {
       const users = await userService.listAll();
-      return res.json({
-        success: true,
-        data: users.map(u => new UserResponseDTO(u))
-      });
+      res.json({ success: true, data: users.map(u => new UserResponseDTO(u)) });
     } catch (err) { next(err); }
   },
 
   async getById(req, res, next) {
     try {
-      const id = Number(req.params.id);
-      const user = await userService.getById(id);
-      return res.json({
-        success: true,
-        data: new UserResponseDTO(user)
-      });
+      const user = await userService.getById(Number(req.params.id));
+      res.json({ success: true, data: new UserResponseDTO(user) });
     } catch (err) { next(err); }
   },
 
@@ -29,30 +22,22 @@ export const userController = {
     try {
       const dto = new CreateUserDTO(req.body);
       const user = await userService.create(dto);
-      return res.status(201).json({
-        success: true,
-        data: new UserResponseDTO(user)
-      });
+      res.status(201).json({ success: true, data: new UserResponseDTO(user) });
     } catch (err) { next(err); }
   },
 
   async update(req, res, next) {
     try {
-      const id = Number(req.params.id);
       const dto = new UpdateUserDTO(req.body);
-      const user = await userService.update(id, dto);
-      return res.json({
-        success: true,
-        data: new UserResponseDTO(user)
-      });
+      const user = await userService.update(Number(req.params.id), dto);
+      res.json({ success: true, data: new UserResponseDTO(user) });
     } catch (err) { next(err); }
   },
 
   async delete(req, res, next) {
     try {
-      const id = Number(req.params.id);
-      await userService.delete(id);
-      return res.status(204).send();
+      await userService.delete(Number(req.params.id));
+      res.status(204).send();
     } catch (err) { next(err); }
   }
 };

@@ -4,7 +4,7 @@ import { papelService } from "../papel/papelService.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 
 const SALT_ROUNDS = 10;
-const PAPEL_PADRAO = "Aluno";
+const PAPEL_PADRAO = "aluno";
 
 export const userService = {
   async listAll() {
@@ -12,21 +12,29 @@ export const userService = {
   },
 
   async getById(id) {
-    const user = await userRepository.findById(id);
+    const user = await userRepository.findById(Number(id));
     if (!user) throw new HttpError(404, "Usuário não encontrado");
     return user;
   },
 
+  async getByIdWithRoles(id) {
+    const user = await userRepository.findById(Number(id));
+    if (!user) throw new HttpError(404, "Usuário não encontrado");
+
+    return {
+      ...user,
+      papeis: user.papeis?.map(up => ({ ...up.papel })) || []
+    };
+  },
+
   async create(dto) {
     dto.validate();
-
     const existing = await userRepository.findByEmail(dto.email);
     if (existing) throw new HttpError(409, "Email já cadastrado");
 
-    const papelNome = dto.papelNome || PAPEL_PADRAO;
+    const papelNome = (dto.papelNome || PAPEL_PADRAO).toLowerCase();
     const papel = await papelService.getByName(papelNome);
-    if (!papel) throw new HttpError(404, `Papel '${papelNome}' não encontrado`);
-
+    
     const senhaHash = await bcrypt.hash(dto.senha, SALT_ROUNDS);
 
     return userRepository.createWithRole({
@@ -39,44 +47,40 @@ export const userService = {
 
   async update(id, dto) {
     dto.validate();
-    await this.getById(id); // Reutiliza a lógica de "não encontrado"
+    const user = await this.getById(id);
 
-    if (dto.email) {
+    if (dto.email && dto.email !== user.email) {
       const existing = await userRepository.findByEmail(dto.email);
-      if (existing && existing.id !== id) {
+      if (existing && existing.id !== Number(id)) {
         throw new HttpError(409, "Email já cadastrado por outro usuário");
       }
     }
 
-    const data = {
-      ...(dto.nome && { nome: dto.nome }),
-      ...(dto.email && { email: dto.email }),
-      ...(dto.senha && { senha: await bcrypt.hash(dto.senha, SALT_ROUNDS) })
-    };
+    // Construção dinâmica para evitar erro 500 no bcrypt
+    const data = {};
+    if (dto.nome) data.nome = dto.nome;
+    if (dto.email) data.email = dto.email.toLowerCase();
+    
+    // Só hashea se a senha for enviada e não for vazia
+    if (dto.senha && dto.senha.trim() !== "") {
+      data.senha = await bcrypt.hash(dto.senha, SALT_ROUNDS);
+    }
+
+    // Se nada foi enviado para mudar, retorna o usuário atual
+    if (Object.keys(data).length === 0) return user;
 
     return userRepository.update(id, data);
   },
 
   async delete(id) {
     await this.getById(id);
-
-    const possuiTurmas = await userRepository.hasTurmas(id);
-    if (possuiTurmas) {
-      throw new HttpError(
-        409,
-        "Usuário não pode ser excluído: possui turmas associadas"
-      );
-    }
-
-    const possuiMatriculas = await userRepository.hasMatriculas(id);
-    if (possuiMatriculas) {
-      throw new HttpError(
-        409,
-        "Usuário não pode ser excluído: possui matrículas associadas"
-      );
-    }
+    
+    // Validação de integridade acadêmica
+    if (await userRepository.hasTurmas(id))
+      throw new HttpError(409, "Usuário não pode ser excluído: possui turmas associadas");
+    if (await userRepository.hasMatriculas(id))
+      throw new HttpError(409, "Usuário não pode ser excluído: possui matrículas associadas");
 
     await userRepository.delete(id);
   }
-
 };

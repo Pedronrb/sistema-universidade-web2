@@ -8,22 +8,16 @@ const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey";
 
 export const authenticate = (req, res, next) => {
   const authHeader = req.header("Authorization");
-  if (!authHeader) {
-    return next(new HttpError(401, "Access denied. No token provided."));
-  }
+  if (!authHeader) return next(new HttpError(401, "Token não fornecido"));
 
   const token = authHeader.replace("Bearer ", "").trim();
-  if (!token) {
-    return next(new HttpError(401, "Access denied. Token inválido."));
-  }
+  if (!token) return next(new HttpError(401, "Token inválido"));
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-
-    // Adiciona o usuário decodificado ao req
-    req.user = decoded;
+    req.user = decoded; // {id, nome, email, papeis}
     next();
   } catch (err) {
-    return next(new HttpError(401, "Token inválido ou expirado."));
+    return next(new HttpError(401, "Token inválido ou expirado"));
   }
 };

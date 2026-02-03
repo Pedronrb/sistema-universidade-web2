@@ -5,6 +5,9 @@
   "main": "src/server.js",
   "license": "ISC",
   "type": "module",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "dev": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/universidade?schema=public\" nodemon src/server.js",
     "start": "node src/server.js",

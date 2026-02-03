@@ -3,11 +3,11 @@ import { comparePassword, generateToken } from "../../utils/auth.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 
 export const authService = {
-
   async login(dto) {
     dto.validate();
 
     const user = await userRepository.findByUsername(dto.email);
+    
     if (!user) {
       throw new HttpError(401, "Email ou senha inválidos");
     }
@@ -24,7 +24,8 @@ export const authService = {
         id: user.id,
         nome: user.nome,
         email: user.email,
-        papeis: user.papeis.map(p => p.papel.nome)
+        // Mapeamento seguro da estrutura do Prisma
+        papeis: user.papeis?.map(p => p.papel?.nome || p.papelNome) || []
       },
       token
     };

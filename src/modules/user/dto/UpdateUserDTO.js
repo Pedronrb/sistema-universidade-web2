@@ -8,30 +8,12 @@ export class UpdateUserDTO {
   }
 
   validate() {
-    if (
-      this.nome === undefined &&
-      this.email === undefined &&
-      this.senha === undefined
-    ) {
-      throw new HttpError(400, "Informe ao menos um campo para atualização");
+    // Na atualização, os campos são opcionais. Validamos apenas se existirem.
+    if (this.email && (!this.email.includes("@") || this.email.length < 5)) {
+      throw new HttpError(400, "Formato de e-mail inválido");
     }
-
-    if (this.nome !== undefined) {
-      if (typeof this.nome !== "string" || this.nome.trim() === "") {
-        throw new HttpError(400, "nome inválido");
-      }
-    }
-
-    if (this.email !== undefined) {
-      if (typeof this.email !== "string" || this.email.trim() === "") {
-        throw new HttpError(400, "email inválido");
-      }
-    }
-
-    if (this.senha !== undefined) {
-      if (this.senha.length < 6) {
-        throw new HttpError(400, "senha deve ter no mínimo 6 caracteres");
-      }
+    if (this.senha && this.senha.length > 0 && this.senha.length < 6) {
+      throw new HttpError(400, "A nova senha deve ter no mínimo 6 caracteres");
     }
   }
 }

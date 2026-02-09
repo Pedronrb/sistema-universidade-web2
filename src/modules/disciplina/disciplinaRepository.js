@@ -1,5 +1,4 @@
 import { prisma } from "../../Prisma.js";
-
 class DisciplinaRepository {
   async create(data) {
     return await prisma.disciplina.create({
@@ -68,4 +67,4 @@ class DisciplinaRepository {
   }
 }
 
-module.exports = new DisciplinaRepository();
+export const disciplinaRepository = new DisciplinaRepository();

@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/32</span>
+                <span class='fraction'>0/28</span>
             </div>
         
             
@@ -161,8 +161,7 @@
 <a name='L96'></a><a href='#L96'>96</a>
 <a name='L97'></a><a href='#L97'>97</a>
 <a name='L98'></a><a href='#L98'>98</a>
-<a name='L99'></a><a href='#L99'>99</a>
-<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L99'></a><a href='#L99'>99</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -193,28 +192,24 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -224,6 +219,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -262,7 +260,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">import { disciplinaRepository } from "./disciplinaRepository.js";
-import { cursoService } from "../curso/cursoService.js"; // &lt;--- NOVO IMPORT
+import { cursoService } from "../curso/cursoService.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 &nbsp;
 class DisciplinaService {
@@ -292,7 +290,8 @@ class DisciplinaService {
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >        await cursoService.getById(idCursoInt);</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >        if (error instanceof HttpError &amp;&amp; error.status === 404) {</span>
+        // Correção para bater com o Error lançado no cursoService
+<span class="cstat-no" title="statement not covered" >        if (error.message === "Curso não encontrado") {</span>
 <span class="cstat-no" title="statement not covered" >            throw new HttpError(404, `Curso com ID ${cursoId} não encontrado. Não é possível criar a disciplina.`);</span>
         }
 <span class="cstat-no" title="statement not covered" >        throw error;</span>
@@ -311,7 +310,6 @@ class DisciplinaService {
     });
   }
 &nbsp;
-  
 <span class="fstat-no" title="function not covered" >  as</span>ync listDisciplinas() {
 <span class="cstat-no" title="statement not covered" >    return await disciplinaRepository.findAll();</span>
   }
@@ -323,7 +321,6 @@ class DisciplinaService {
 <span class="fstat-no" title="function not covered" >  as</span>ync updateDisciplinas(id, data) {
     const disciplinaExiste = <span class="cstat-no" title="statement not covered" >await this.getById(id)</span>
 &nbsp;
-    // Logica do código único
 <span class="cstat-no" title="statement not covered" >    if (data.codigo &amp;&amp; data.codigo !== disciplinaExiste.codigo) {</span>
       const codigoEmUso = <span class="cstat-no" title="statement not covered" >await disciplinaRepository.findByCodigo(data.codigo);</span>
 <span class="cstat-no" title="statement not covered" >      if (codigoEmUso) {</span>
@@ -339,7 +336,7 @@ class DisciplinaService {
 <span class="cstat-no" title="statement not covered" >        try {</span>
 <span class="cstat-no" title="statement not covered" >             await cursoService.getById(novoCursoIdInt);</span>
         } catch (error) {
-<span class="cstat-no" title="statement not covered" >             if (error instanceof HttpError &amp;&amp; error.status === 404) {</span>
+<span class="cstat-no" title="statement not covered" >             if (error.message === "Curso não encontrado") {</span>
 <span class="cstat-no" title="statement not covered" >                throw new HttpError(404, `Novo Curso ID ${data.cursoId} não encontrado.`);</span>
              }
 <span class="cstat-no" title="statement not covered" >             throw error;</span>
@@ -367,7 +364,7 @@ export const disciplinaService = new DisciplinaService();</pre></td></tr></table
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-03T01:10:40.372Z
+                at 2026-02-09T20:46:11.884Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

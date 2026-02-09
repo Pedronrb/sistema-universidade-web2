@@ -44,4 +44,5 @@ class CursoRepository {
   }
 }
 
-module.exports = new CursoRepository();
+// CORREÇÃO: Exportação nomeada para ser compatível com os outros módulos
+export const cursoRepository = new CursoRepository();

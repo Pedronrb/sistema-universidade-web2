@@ -31,6 +31,25 @@ export const userRepository = {
     return this.findByEmail(username);
   },
 
+  // --- NOVOS MÉTODOS DE VERIFICAÇÃO (CORRIGIDOS) ---
+  async hasTurmas(id) {
+    // Verifica se o usuário está vinculado a alguma turma como professor
+    // Nota: Mantenha 'professorId' se for este o nome no seu schema.prisma para Turma
+    const turma = await prisma.turma.findFirst({
+      where: { professorId: Number(id) }
+    });
+    return !!turma;
+  },
+
+  async hasMatriculas(id) {
+    // CORREÇÃO: Alterado de 'alunoId' para 'usuarioId' conforme erro do Prisma
+    const matricula = await prisma.matricula.findFirst({
+      where: { usuarioId: Number(id) }
+    });
+    return !!matricula;
+  },
+  // ----------------------------------------------
+
   async createWithRole({ nome, email, senhaHash, papelId }) {
     return prisma.usuario.create({
       data: {

@@ -1,5 +1,5 @@
 import { disciplinaRepository } from "./disciplinaRepository.js";
-import { cursoService } from "../curso/cursoService.js"; // <--- NOVO IMPORT
+import { cursoService } from "../curso/cursoService.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 
 class DisciplinaService {
@@ -29,7 +29,8 @@ class DisciplinaService {
     try {
         await cursoService.getById(idCursoInt);
     } catch (error) {
-        if (error instanceof HttpError && error.status === 404) {
+        // Correção para bater com o Error lançado no cursoService
+        if (error.message === "Curso não encontrado") {
             throw new HttpError(404, `Curso com ID ${cursoId} não encontrado. Não é possível criar a disciplina.`);
         }
         throw error;
@@ -48,7 +49,6 @@ class DisciplinaService {
     });
   }
 
-  
   async listDisciplinas() {
     return await disciplinaRepository.findAll();
   }
@@ -60,7 +60,6 @@ class DisciplinaService {
   async updateDisciplinas(id, data) {
     const disciplinaExiste = await this.getById(id)
 
-    // Logica do código único
     if (data.codigo && data.codigo !== disciplinaExiste.codigo) {
       const codigoEmUso = await disciplinaRepository.findByCodigo(data.codigo);
       if (codigoEmUso) {
@@ -76,7 +75,7 @@ class DisciplinaService {
         try {
              await cursoService.getById(novoCursoIdInt);
         } catch (error) {
-             if (error instanceof HttpError && error.status === 404) {
+             if (error.message === "Curso não encontrado") {
                 throw new HttpError(404, `Novo Curso ID ${data.cursoId} não encontrado.`);
              }
              throw error;

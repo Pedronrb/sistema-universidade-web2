@@ -4,7 +4,19 @@ import { userRepository } from "../../src/modules/user/userRepository.js";
 import { papelService } from "../../src/modules/papel/papelService.js";
 import { HttpError } from "../../src/middlewares/HttpError.js";
 
-jest.mock("../../src/modules/user/userRepository.js");
+// CORREÇÃO: Mock explícito com as funções que o Jest não estava encontrando
+jest.mock("../../src/modules/user/userRepository.js", () => ({
+  userRepository: {
+    findById: jest.fn(),
+    findByEmail: jest.fn(),
+    createWithRole: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    hasTurmas: jest.fn(),      // Agora o Jest reconhece
+    hasMatriculas: jest.fn()   // Agora o Jest reconhece
+  }
+}));
+
 jest.mock("../../src/modules/papel/papelService.js");
 jest.mock("bcryptjs");
 
@@ -71,7 +83,6 @@ describe("UserService - Unit Tests", () => {
       const mockUser = { id: 1, nome: "Antigo" };
       userRepository.findById.mockResolvedValue(mockUser);
       
-      // Criando um DTO que não tem campos para atualizar (cobre a linha 80/82)
       const result = await userService.update(1, { validate: jest.fn() });
       
       expect(result).toEqual(mockUser);

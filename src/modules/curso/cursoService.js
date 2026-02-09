@@ -45,6 +45,4 @@ class CursoService {
     return await cursoRepository.delete(id);
   }
 }
-
 export const cursoService = new CursoService();
-

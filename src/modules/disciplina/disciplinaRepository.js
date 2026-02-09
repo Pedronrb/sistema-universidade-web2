@@ -1,4 +1,3 @@
-
 import { prisma } from "../../prisma.js";
 
 class DisciplinaRepository {

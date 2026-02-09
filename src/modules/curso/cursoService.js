@@ -46,8 +46,5 @@ class CursoService {
   }
 }
 
-<<<<<<< HEAD
 export const cursoService = new CursoService();
-=======
-export const cursoService = new CursoService();
->>>>>>> 3397f46a3a56a6ac6d7bb9465d5d4034ac77b48c
+

@@ -1,4 +1,4 @@
-import { prisma } from "../../Prisma.js";
+import { prisma } from "../../prisma.js";
 
 class CursoRepository {
   async create(data) {
@@ -44,5 +44,9 @@ class CursoRepository {
   }
 }
 
+<<<<<<< HEAD
 // CORREÇÃO: Exportação nomeada para ser compatível com os outros módulos
 export const cursoRepository = new CursoRepository();
+=======
+export const cursoRepository = new CursoRepository();
+>>>>>>> 3397f46a3a56a6ac6d7bb9465d5d4034ac77b48c

@@ -78,4 +78,4 @@ class TurmaRepository {
   }
 }
 
-module.exports = new TurmaRepository();
+export const turmaRepository = new TurmaRepository();

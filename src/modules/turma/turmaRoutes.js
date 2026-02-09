@@ -1,6 +1,6 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const turmaController = require("../turma/turmaController");
+import { turmaController } from "../turma/turmaController.js";
 
 router.post("/", turmaController.create);
 router.get("/", turmaController.list);
@@ -10,4 +10,4 @@ router.get("/disciplina/:disciplinaId", turmaController.listByDisciplina);
 router.put("/:id", turmaController.update);
 router.delete("/:id", turmaController.delete);
 
-module.exports = router;
+export default router;

@@ -1,11 +1,12 @@
 import { matriculaRepository } from "../matricula/matriculaRepository.js";
+import { HttpError } from "../../middlewares/HttpError.js";
 
 class MatriculaService {
   async createMatricula(data) {
     const { usuarioId, turmaId } = data;
 
     if (!usuarioId || !turmaId) {
-      throw new Error("Todos os campos são obrigatórios");
+      throw new HttpError(400, "Todos os campos são obrigatórios");
     }
 
     const matriculaExiste = await matriculaRepository.getByUsuarioAndTurma(
@@ -14,7 +15,7 @@ class MatriculaService {
     );
 
     if (matriculaExiste) {
-      throw new Error("Usuário já está matriculado nesta turma");
+      throw new HttpError(409, "Usuário já está matriculado nesta turma");
     }
 
     return await matriculaRepository.create({
@@ -31,7 +32,7 @@ class MatriculaService {
     const matricula = await matriculaRepository.getById(id);
 
     if (!matricula) {
-      throw new Error("Matrícula não encontrada");
+      throw new HttpError(404, "Matrícula não encontrada");
     }
 
     return matricula;
@@ -49,7 +50,7 @@ class MatriculaService {
     const matriculaExiste = await matriculaRepository.getById(id);
 
     if (!matriculaExiste) {
-      throw new Error("Matrícula não encontrada");
+      throw new HttpError(404, "Matrícula não encontrada");
     }
 
     if (data.usuarioId) {
@@ -67,7 +68,7 @@ class MatriculaService {
     const matriculaExiste = await matriculaRepository.getById(id);
 
     if (!matriculaExiste) {
-      throw new Error("Matrícula não encontrada");
+      throw new HttpError(404, "Matrícula não encontrada");
     }
 
     return await matriculaRepository.delete(id);

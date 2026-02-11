@@ -1,11 +1,12 @@
 import { cursoRepository } from "../curso/cursoRepository.js";
+import { HttpError } from "../../middlewares/HttpError.js";
 
 class CursoService {
   async createCurso(data) {
     const { nome, descricao } = data;
 
     if (!nome) {
-      throw new Error("Nome do curso é obrigatório");
+      throw new HttpError(400, "Nome do curso é obrigatório");
     }
 
     return await cursoRepository.create({ nome, descricao });
@@ -19,7 +20,7 @@ class CursoService {
     const curso = await cursoRepository.findById(id);
 
     if (!curso) {
-      throw new Error("Curso não encontrado");
+      throw new HttpError(404, "Curso não encontrado");
     }
 
     return curso;
@@ -29,7 +30,7 @@ class CursoService {
     const cursoExiste = await cursoRepository.findById(id);
 
     if (!cursoExiste) {
-      throw new Error("Curso não encontrado");
+      throw new HttpError(404, "Curso não encontrado");
     }
 
     return await cursoRepository.update(id, data);
@@ -39,7 +40,7 @@ class CursoService {
     const cursoExiste = await cursoRepository.findById(id);
 
     if (!cursoExiste) {
-      throw new Error("Curso não encontrado");
+      throw new HttpError(404, "Curso não encontrado");
     }
 
     return await cursoRepository.delete(id);

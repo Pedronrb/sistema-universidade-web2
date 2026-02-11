@@ -6,7 +6,7 @@ class TurmaController {
       const turma = await turmaService.createTurma(req.body);
       return res.status(201).json(turma);
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -15,7 +15,7 @@ class TurmaController {
       const turmas = await turmaService.listTurmas();
       return res.status(200).json(turmas);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -24,7 +24,7 @@ class TurmaController {
       const turma = await turmaService.getTurmaById(req.params.id);
       return res.status(200).json(turma);
     } catch (error) {
-      return res.status(404).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -35,7 +35,7 @@ class TurmaController {
       );
       return res.status(200).json(turmas);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -46,7 +46,7 @@ class TurmaController {
       );
       return res.status(200).json(turmas);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -55,7 +55,7 @@ class TurmaController {
       const turma = await turmaService.updateTurma(req.params.id, req.body);
       return res.status(200).json(turma);
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -64,7 +64,7 @@ class TurmaController {
       await turmaService.deleteTurma(req.params.id);
       return res.status(204).send();
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 }

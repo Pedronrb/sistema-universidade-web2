@@ -6,7 +6,7 @@ class MatriculaController {
       const matricula = await matriculaService.createMatricula(req.body);
       return res.status(201).json(matricula);
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -15,7 +15,7 @@ class MatriculaController {
       const matriculas = await matriculaService.listMatriculas();
       return res.status(200).json(matriculas);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -24,7 +24,7 @@ class MatriculaController {
       const matricula = await matriculaService.getMatriculaById(req.params.id);
       return res.status(200).json(matricula);
     } catch (error) {
-      return res.status(404).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -35,7 +35,7 @@ class MatriculaController {
       );
       return res.status(200).json(matriculas);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -46,7 +46,7 @@ class MatriculaController {
       );
       return res.status(200).json(matriculas);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -58,7 +58,7 @@ class MatriculaController {
       );
       return res.status(200).json(matricula);
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
@@ -67,7 +67,7 @@ class MatriculaController {
       await matriculaService.deleteMatricula(req.params.id);
       return res.status(204).send();
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 }

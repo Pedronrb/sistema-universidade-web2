@@ -3,7 +3,6 @@ import { cursoService } from "../curso/cursoService.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 
 class DisciplinaService {
-  
   async getById(id) {
     const disciplina = await disciplinaRepository.findById(id);
 
@@ -13,27 +12,32 @@ class DisciplinaService {
 
     return disciplina;
   }
-  
+
   async createDisciplina(data) {
     const { nome, codigo, cargaHoraria, cursoId } = data;
 
     if (!nome || !codigo || !cargaHoraria || !cursoId) {
-      throw new HttpError(400, "Todos os campos são obrigatórios: nome, codigo, cargaHoraria, cursoId.");
+      throw new HttpError(
+        400,
+        "Todos os campos são obrigatórios: nome, codigo, cargaHoraria, cursoId.",
+      );
     }
-    
+
     const idCursoInt = Number.parseInt(cursoId);
     if (Number.isNaN(idCursoInt)) {
-        throw new HttpError(400, "cursoId inválido. Deve ser um número.");
+      throw new HttpError(400, "cursoId inválido. Deve ser um número.");
     }
 
     try {
-        await cursoService.getById(idCursoInt);
+      await cursoService.getById(idCursoInt);
     } catch (error) {
-        // Correção para bater com o Error lançado no cursoService
-        if (error.message === "Curso não encontrado") {
-            throw new HttpError(404, `Curso com ID ${cursoId} não encontrado. Não é possível criar a disciplina.`);
-        }
-        throw error;
+      if (error instanceof HttpError && error.status === 404) {
+        throw new HttpError(
+          404,
+          `Curso com ID ${cursoId} não encontrado. Não é possível criar a disciplina.`,
+        );
+      }
+      throw error;
     }
 
     const disciplinaExiste = await disciplinaRepository.findByCodigo(codigo);
@@ -52,13 +56,13 @@ class DisciplinaService {
   async listDisciplinas() {
     return await disciplinaRepository.findAll();
   }
-  
+
   async getDisciplinasByCurso(cursoId) {
     return await disciplinaRepository.findByCurso(cursoId);
   }
 
   async updateDisciplinas(id, data) {
-    const disciplinaExiste = await this.getById(id)
+    const disciplinaExiste = await this.getById(id);
 
     if (data.codigo && data.codigo !== disciplinaExiste.codigo) {
       const codigoEmUso = await disciplinaRepository.findByCodigo(data.codigo);
@@ -66,21 +70,24 @@ class DisciplinaService {
         throw new HttpError(409, "Já existe uma disciplina com este código");
       }
     }
-    
+
     if (data.cursoId) {
-        const novoCursoIdInt = Number.parseInt(data.cursoId);
-        if (Number.isNaN(novoCursoIdInt)) {
-            throw new HttpError(400, "cursoId inválido. Deve ser um número.");
+      const novoCursoIdInt = Number.parseInt(data.cursoId);
+      if (Number.isNaN(novoCursoIdInt)) {
+        throw new HttpError(400, "cursoId inválido. Deve ser um número.");
+      }
+      try {
+        await cursoService.getById(novoCursoIdInt);
+      } catch (error) {
+        if (error instanceof HttpError && error.status === 404) {
+          throw new HttpError(
+            404,
+            `Novo Curso ID ${data.cursoId} não encontrado.`,
+          );
         }
-        try {
-             await cursoService.getById(novoCursoIdInt);
-        } catch (error) {
-             if (error.message === "Curso não encontrado") {
-                throw new HttpError(404, `Novo Curso ID ${data.cursoId} não encontrado.`);
-             }
-             throw error;
-        }
-        data.cursoId = novoCursoIdInt;
+        throw error;
+      }
+      data.cursoId = novoCursoIdInt;
     }
 
     if (data.cargaHoraria) {

@@ -1,48 +1,48 @@
 import { cursoService } from "../curso/cursoService.js";
 
 class CursoController {
-  async create(req, res) {
+  async create(req, res, next) {
     try {
       const curso = await cursoService.createCurso(req.body);
       return res.status(201).json(curso);
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
-  async list(req, res) {
+  async list(req, res, next) {
     try {
       const cursos = await cursoService.listCursos();
       return res.status(200).json(cursos);
     } catch (error) {
-      return res.status(500).json({ erro: error.message });
+      next(error);
     }
   }
 
-  async getById(req, res) {
+  async getById(req, res, next) {
     try {
       const curso = await cursoService.getCursoById(req.params.id);
       return res.status(200).json(curso);
     } catch (error) {
-      return res.status(404).json({ erro: error.message });
+      next(error);
     }
   }
 
-  async update(req, res) {
+  async update(req, res, next) {
     try {
       const curso = await cursoService.updateCurso(req.params.id, req.body);
       return res.status(200).json(curso);
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       await cursoService.deleteCurso(req.params.id);
       return res.status(204).send();
     } catch (error) {
-      return res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 }

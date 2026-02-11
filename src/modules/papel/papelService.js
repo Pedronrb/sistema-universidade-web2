@@ -1,4 +1,3 @@
-// src/modules/papel/papelService.js
 import { papelRepository } from "./papelRepository.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 
@@ -30,7 +29,7 @@ export const papelService = {
     if (!papel) throw new HttpError(404, "Papel não encontrado.");
     return papel;
   },
-  
+
   async deleteById(id) {
     await this.getById(id);
     await papelRepository.delete(id);
@@ -39,5 +38,5 @@ export const papelService = {
   async updateById(id, { nome }) {
     await this.getById(id);
     await papelRepository.update(id, { nome });
-  }
+  },
 };

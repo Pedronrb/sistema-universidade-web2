@@ -27,7 +27,7 @@ model Papel {
 
 model UsuarioPapel {
   id        Int     @id @default(autoincrement())
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   usuarioId Int
   papel     Papel   @relation(fields: [papelId], references: [id])
   papelId   Int

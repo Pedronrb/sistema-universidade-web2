@@ -21,8 +21,8 @@ export const userRepository = {
   async findByEmail(email) {
     return prisma.usuario.findUnique({
       where: { email },
-      include: { 
-        papeis: { select: { papel: { select: { nome: true } } } } 
+      include: {
+        papeis: { select: { papel: { select: { nome: true } } } }
       }
     });
   },
@@ -31,10 +31,7 @@ export const userRepository = {
     return this.findByEmail(username);
   },
 
-  // --- NOVOS MÉTODOS DE VERIFICAÇÃO (CORRIGIDOS) ---
   async hasTurmas(id) {
-    // Verifica se o usuário está vinculado a alguma turma como professor
-    // Nota: Mantenha 'professorId' se for este o nome no seu schema.prisma para Turma
     const turma = await prisma.turma.findFirst({
       where: { professorId: Number(id) }
     });
@@ -42,13 +39,11 @@ export const userRepository = {
   },
 
   async hasMatriculas(id) {
-    // CORREÇÃO: Alterado de 'alunoId' para 'usuarioId' conforme erro do Prisma
     const matricula = await prisma.matricula.findFirst({
       where: { usuarioId: Number(id) }
     });
     return !!matricula;
   },
-  // ----------------------------------------------
 
   async createWithRole({ nome, email, senhaHash, papelId }) {
     return prisma.usuario.create({
@@ -71,6 +66,16 @@ export const userRepository = {
   },
 
   async delete(id) {
-    return prisma.usuario.delete({ where: { id: Number(id) } });
+    const userId = Number(id);
+
+    return prisma.$transaction([
+      prisma.usuarioPapel.deleteMany({
+        where: { usuarioId: userId }
+      }),
+
+      prisma.usuario.delete({
+        where: { id: userId }
+      })
+    ]);
   }
 };

@@ -75,7 +75,6 @@ export const userService = {
   async delete(id) {
     await this.getById(id);
     
-    // Validação de integridade acadêmica
     if (await userRepository.hasTurmas(id))
       throw new HttpError(409, "Usuário não pode ser excluído: possui turmas associadas");
     if (await userRepository.hasMatriculas(id))

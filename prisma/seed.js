@@ -8,29 +8,29 @@ async function main() {
 
   const papeisNomes = ["admin", "coordenador", "professor", "aluno"];
   
-  // Criamos os papéis e armazenamos os objetos retornados em um mapa para acesso rápido
+  // Mapa para armazenar os objetos de papel retornados pelo banco
   const mapeamentoPapeis = {};
 
   console.log("--- Criando/Verificando Papéis ---");
   for (const nome of papeisNomes) {
+    // CORREÇÃO: Usamos 'where: { nome }' para evitar conflito de Unique Constraint
     const papel = await prisma.papel.upsert({
-      where: { id: papeisNomes.indexOf(nome) + 1 },
+      where: { nome: nome }, 
       update: {},
       create: { nome: nome },
     });
     mapeamentoPapeis[nome] = papel;
-    console.log(`Papel: ${nome}`);
+    console.log(`Papel verificado/criado: ${nome} (ID: ${papel.id})`);
   }
 
   console.log("\n--- Criando Usuário Administrador ---");
   const adminEmail = "admin@universidade.com";
   const senhaHash = await bcrypt.hash("admin123", 10);
 
-  // Agora usamos o objeto que o próprio Prisma acabou de nos retornar
   const papelAdmin = mapeamentoPapeis["admin"];
 
   if (!papelAdmin) {
-    throw new Error(" Erro crítico: Papel 'admin' não encontrado no mapeamento local.");
+    throw new Error("Erro crítico: Papel 'admin' não encontrado no banco.");
   }
 
   const admin = await prisma.usuario.upsert({
@@ -48,13 +48,13 @@ async function main() {
     }
   });
 
-  console.log(`🚀 Admin pronto: ${adminEmail} / admin123`);
-  console.log("✨ Seed finalizado com sucesso!");
+  console.log(`Admin pronto: ${adminEmail} / admin123`);
+  console.log("Seed finalizado com sucesso!");
 }
 
 main()
   .catch((e) => {
-    console.error(" Erro durante o seed:");
+    console.error("Erro durante o seed:");
     console.error(e);
     process.exit(1);
   })

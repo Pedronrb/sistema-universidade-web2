@@ -4,7 +4,6 @@ import { papelService } from "../papel/papelService.js";
 import { HttpError } from "../../middlewares/HttpError.js";
 
 const SALT_ROUNDS = 10;
-const PAPEL_PADRAO = "aluno";
 
 export const userService = {
   async listAll() {
@@ -29,12 +28,22 @@ export const userService = {
 
   async create(dto) {
     dto.validate();
+
     const existing = await userRepository.findByEmail(dto.email);
     if (existing) throw new HttpError(409, "Email já cadastrado");
 
-    const papelNome = (dto.papelNome || PAPEL_PADRAO).toLowerCase();
+    // AGORA O PAPEL É OBRIGATÓRIO
+    if (!dto.papelNome || dto.papelNome.trim() === "") {
+      throw new HttpError(400, "papelNome é obrigatório");
+    }
+
+    const papelNome = dto.papelNome.toLowerCase();
     const papel = await papelService.getByName(papelNome);
-    
+
+    if (!papel) {
+      throw new HttpError(404, `Papel '${papelNome}' não encontrado`);
+    }
+
     const senhaHash = await bcrypt.hash(dto.senha, SALT_ROUNDS);
 
     return userRepository.createWithRole({
@@ -56,17 +65,15 @@ export const userService = {
       }
     }
 
-    // Construção dinâmica para evitar erro 500 no bcrypt
     const data = {};
+
     if (dto.nome) data.nome = dto.nome;
     if (dto.email) data.email = dto.email.toLowerCase();
-    
-    // Só hashea se a senha for enviada e não for vazia
+
     if (dto.senha && dto.senha.trim() !== "") {
       data.senha = await bcrypt.hash(dto.senha, SALT_ROUNDS);
     }
 
-    // Se nada foi enviado para mudar, retorna o usuário atual
     if (Object.keys(data).length === 0) return user;
 
     return userRepository.update(id, data);
@@ -74,9 +81,10 @@ export const userService = {
 
   async delete(id) {
     await this.getById(id);
-    
+
     if (await userRepository.hasTurmas(id))
       throw new HttpError(409, "Usuário não pode ser excluído: possui turmas associadas");
+
     if (await userRepository.hasMatriculas(id))
       throw new HttpError(409, "Usuário não pode ser excluído: possui matrículas associadas");
 

@@ -38,10 +38,8 @@ export const userController = {
     try {
       await userService.delete(Number(req.params.id));
 
-      res.status(200).json({
-        success: true,
-        message: "Usuário deletado com sucesso!"
-      });
+      return res.status(204).send();
+
     } catch (err) {
       next(err);
     }

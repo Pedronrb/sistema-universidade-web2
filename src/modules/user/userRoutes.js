@@ -6,12 +6,33 @@ import { authorize } from "../../middlewares/authorize.js";
 const router = Router();
 
 // Listar usuários (admin e coordenador)
-router.get("/", authenticate, authorize(["admin", "coordenador"]), userController.listAll);
-router.get("/:id", authenticate, authorize(["admin", "coordenador"]), userController.getById);
+router.get(
+  "/",
+  authenticate,
+  authorize(["admin", "coordenador"]),
+  userController.listAll,
+);
+router.get(
+  "/:id",
+  authenticate,
+  authorize(["admin", "coordenador"]),
+  userController.getById,
+);
 
 // Criar, atualizar e deletar usuários (apenas admin)
 router.post("/", authenticate, authorize(["admin"]), userController.create);
 router.put("/:id", authenticate, authorize(["admin"]), userController.update);
-router.delete("/:id", authenticate, authorize(["admin"]), userController.delete);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  userController.delete,
+);
+router.patch(
+  "/:id/papel",
+  authenticate,
+  authorize(["admin"]),
+  userController.updatePapel,
+);
 
 export default router;

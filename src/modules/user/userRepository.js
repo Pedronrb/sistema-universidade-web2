@@ -4,8 +4,8 @@ export const userRepository = {
   async findAll() {
     return prisma.usuario.findMany({
       include: {
-        papeis: { select: { papel: { select: { nome: true } } } }
-      }
+        papeis: { select: { papel: { select: { nome: true } } } },
+      },
     });
   },
 
@@ -13,8 +13,8 @@ export const userRepository = {
     return prisma.usuario.findUnique({
       where: { id: Number(id) },
       include: {
-        papeis: { select: { papel: { select: { nome: true } } } }
-      }
+        papeis: { select: { papel: { select: { nome: true } } } },
+      },
     });
   },
 
@@ -22,8 +22,8 @@ export const userRepository = {
     return prisma.usuario.findUnique({
       where: { email },
       include: {
-        papeis: { select: { papel: { select: { nome: true } } } }
-      }
+        papeis: { select: { papel: { select: { nome: true } } } },
+      },
     });
   },
 
@@ -33,14 +33,14 @@ export const userRepository = {
 
   async hasTurmas(id) {
     const turma = await prisma.turma.findFirst({
-      where: { professorId: Number(id) }
+      where: { professorId: Number(id) },
     });
     return !!turma;
   },
 
   async hasMatriculas(id) {
     const matricula = await prisma.matricula.findFirst({
-      where: { usuarioId: Number(id) }
+      where: { usuarioId: Number(id) },
     });
     return !!matricula;
   },
@@ -51,9 +51,9 @@ export const userRepository = {
         nome,
         email,
         senha: senhaHash,
-        papeis: { create: { papelId } }
+        papeis: { create: { papelId } },
       },
-      include: { papeis: { select: { papel: { select: { nome: true } } } } }
+      include: { papeis: { select: { papel: { select: { nome: true } } } } },
     });
   },
 
@@ -61,8 +61,15 @@ export const userRepository = {
     return prisma.usuario.update({
       where: { id: Number(id) },
       data,
-      include: { papeis: { select: { papel: { select: { nome: true } } } } }
+      include: { papeis: { select: { papel: { select: { nome: true } } } } },
     });
+  },
+
+  async updatePapel(userId, papelId) {
+    // Remove papéis atuais e insere o novo
+    await prisma.usuarioPapel.deleteMany({ where: { usuarioId: userId } });
+    await prisma.usuarioPapel.create({ data: { usuarioId: userId, papelId } });
+    return this.findById(userId);
   },
 
   async delete(id) {
@@ -70,12 +77,12 @@ export const userRepository = {
 
     return prisma.$transaction([
       prisma.usuarioPapel.deleteMany({
-        where: { usuarioId: userId }
+        where: { usuarioId: userId },
       }),
 
       prisma.usuario.delete({
-        where: { id: userId }
-      })
+        where: { id: userId },
+      }),
     ]);
-  }
+  },
 };

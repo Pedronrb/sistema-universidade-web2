@@ -22,7 +22,7 @@ export const userService = {
 
     return {
       ...user,
-      papeis: user.papeis?.map(up => ({ ...up.papel })) || []
+      papeis: user.papeis?.map((up) => ({ ...up.papel })) || [],
     };
   },
 
@@ -50,7 +50,7 @@ export const userService = {
       nome: dto.nome,
       email: dto.email,
       senhaHash,
-      papelId: papel.id
+      papelId: papel.id,
     });
   },
 
@@ -79,15 +79,28 @@ export const userService = {
     return userRepository.update(id, data);
   },
 
+  async updatePapel(id, papelNome) {
+    await this.getById(id);
+    const papel = await papelService.getByName(papelNome);
+    if (!papel) throw new HttpError(404, `Papel '${papelNome}' não encontrado`);
+    return userRepository.updatePapel(id, papel.id);
+  },
+
   async delete(id) {
     await this.getById(id);
 
     if (await userRepository.hasTurmas(id))
-      throw new HttpError(409, "Usuário não pode ser excluído: possui turmas associadas");
+      throw new HttpError(
+        409,
+        "Usuário não pode ser excluído: possui turmas associadas",
+      );
 
     if (await userRepository.hasMatriculas(id))
-      throw new HttpError(409, "Usuário não pode ser excluído: possui matrículas associadas");
+      throw new HttpError(
+        409,
+        "Usuário não pode ser excluído: possui matrículas associadas",
+      );
 
     await userRepository.delete(id);
-  }
+  },
 };

@@ -12,7 +12,7 @@ class CursoController {
 
   async list(req, res, next) {
     try {
-      const cursos = await cursoService.listCursos();
+      const cursos = await cursoService.findAll();
       return res.status(200).json(cursos);
     } catch (error) {
       next(error);
@@ -21,7 +21,7 @@ class CursoController {
 
   async getById(req, res, next) {
     try {
-      const curso = await cursoService.getCursoById(req.params.id);
+      const curso = await cursoService.getById(req.params.id);
       return res.status(200).json(curso);
     } catch (error) {
       next(error);

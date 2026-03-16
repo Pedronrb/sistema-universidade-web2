@@ -58,9 +58,7 @@ class TurmaService {
       throw error;
     }
 
-    const isProfessor = professor.papeis.some(
-      (up) => up.papel.nome === PAPEL_PROFESSOR,
-    );
+    const isProfessor = professor.papeis.some((up) => up.nome === "professor");
 
     if (!isProfessor) {
       throw new HttpError(
@@ -119,7 +117,7 @@ class TurmaService {
       try {
         const professor = await userService.getByIdWithRoles(idProfessorInt);
         const isProfessor = professor.papeis.some(
-          (up) => up.papel.nome === "Professor",
+          (up) => up.papel.nome === "professor",
         );
         if (!isProfessor) {
           throw new HttpError(

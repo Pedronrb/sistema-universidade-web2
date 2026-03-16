@@ -15,6 +15,10 @@ export default function GerenciarTurmas() {
     disciplinaId: "",
     professorId: "",
   });
+  const [turmaSelecionada, setTurmaSelecionada] = useState(null);
+  const [alunos, setAlunos] = useState([]);
+  const [loadingAlunos, setLoadingAlunos] = useState(false);
+  const [buscaAluno, setBuscaAluno] = useState("");
 
   useEffect(() => {
     carregar();
@@ -62,11 +66,50 @@ export default function GerenciarTurmas() {
     if (!confirm("Deseja remover esta turma?")) return;
     try {
       await api.delete(`/turmas/${id}`);
+      if (turmaSelecionada?.id === id) {
+        setTurmaSelecionada(null);
+        setAlunos([]);
+      }
       carregar();
     } catch (err) {
       setErro(err.message);
     }
   }
+
+  async function verAlunos(turma) {
+    if (turmaSelecionada?.id === turma.id) {
+      setTurmaSelecionada(null);
+      setAlunos([]);
+      setBuscaAluno("");
+      return;
+    }
+    setTurmaSelecionada(turma);
+    setBuscaAluno("");
+    setLoadingAlunos(true);
+    try {
+      const data = await api.get("/matriculas");
+      setAlunos((data.data || data).filter((m) => m.turmaId === turma.id));
+    } finally {
+      setLoadingAlunos(false);
+    }
+  }
+
+  async function retirarAluno(matriculaId, nomeAluno) {
+    if (!confirm(`Deseja retirar "${nomeAluno}" desta turma?`)) return;
+    try {
+      await api.delete(`/matriculas/${matriculaId}`);
+      setAlunos((prev) => prev.filter((m) => m.id !== matriculaId));
+      setMsgSucesso(`${nomeAluno} removido da turma com sucesso!`);
+      carregar();
+      setTimeout(() => setMsgSucesso(""), 3000);
+    } catch (err) {
+      setErro(err.message);
+    }
+  }
+
+  const alunosFiltrados = alunos.filter((m) =>
+    (m.usuario?.nome || "").toLowerCase().includes(buscaAluno.toLowerCase()),
+  );
 
   return (
     <div className="view-container">
@@ -127,37 +170,148 @@ export default function GerenciarTurmas() {
       {loading ? (
         <p>Carregando...</p>
       ) : (
-        <table className="view-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Disciplina</th>
-              <th>Professor</th>
-              <th>Período</th>
-              <th>Alunos</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {turmas.map((t) => (
-              <tr key={t.id}>
-                <td>{t.codigo}</td>
-                <td>{t.disciplina?.nome}</td>
-                <td>{t.professor?.nome}</td>
-                <td>{t.periodo}</td>
-                <td>{t.matriculas?.length || 0}</td>
-                <td>
-                  <button
-                    className="btn-danger-sm"
-                    onClick={() => deletarTurma(t.id)}
-                  >
-                    Remover
-                  </button>
-                </td>
+        <>
+          <table className="view-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Disciplina</th>
+                <th>Professor</th>
+                <th>Período</th>
+                <th>Alunos</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {turmas.map((t) => (
+                <tr key={t.id}>
+                  <td>{t.codigo}</td>
+                  <td>
+                    <span
+                      onClick={() => verAlunos(t)}
+                      style={{
+                        color: "#238636",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        fontWeight:
+                          turmaSelecionada?.id === t.id ? "bold" : "normal",
+                      }}
+                    >
+                      {t.disciplina?.nome}
+                    </span>
+                  </td>
+                  <td>{t.professor?.nome}</td>
+                  <td>{t.periodo}</td>
+                  <td>{t.matriculas?.length || 0}</td>
+                  <td>
+                    <button
+                      className="btn-danger-sm"
+                      onClick={() => deletarTurma(t.id)}
+                    >
+                      Remover
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {turmaSelecionada && (
+            <div style={{ marginTop: 32 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <h3 style={{ margin: 0, fontSize: 15, color: "#222" }}>
+                  Alunos — {turmaSelecionada.disciplina?.nome} (
+                  {turmaSelecionada.codigo})
+                </h3>
+                <button
+                  onClick={() => {
+                    setTurmaSelecionada(null);
+                    setAlunos([]);
+                    setBuscaAluno("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    color: "#888",
+                  }}
+                >
+                  ✕ Fechar
+                </button>
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <input
+                  placeholder="Buscar aluno..."
+                  value={buscaAluno}
+                  onChange={(e) => setBuscaAluno(e.target.value)}
+                  style={{
+                    height: 36,
+                    padding: "0 12px",
+                    border: "1px solid #ccc",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontFamily: "Tahoma, Geneva, sans-serif",
+                    width: 300,
+                    backgroundColor: "#d9d9d9",
+                    color: "#222",
+                  }}
+                />
+              </div>
+
+              {loadingAlunos ? (
+                <p>Carregando alunos...</p>
+              ) : alunosFiltrados.length === 0 ? (
+                <p style={{ color: "#777", fontSize: 13 }}>
+                  {alunos.length === 0
+                    ? "Nenhum aluno matriculado."
+                    : "Nenhum aluno encontrado."}
+                </p>
+              ) : (
+                <table className="view-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {alunosFiltrados.map((m, i) => (
+                      <tr key={m.id}>
+                        <td>{i + 1}</td>
+                        <td>{m.usuario?.nome || `Aluno #${m.usuarioId}`}</td>
+                        <td>{m.usuario?.email || "—"}</td>
+                        <td>
+                          <button
+                            className="btn-danger-sm"
+                            onClick={() =>
+                              retirarAluno(
+                                m.id,
+                                m.usuario?.nome || `Aluno #${m.usuarioId}`,
+                              )
+                            }
+                          >
+                            Retirar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

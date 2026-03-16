@@ -1,7 +1,7 @@
 import { turmaService } from "../turma/turmaService.js";
 
 class TurmaController {
-  async create(req, res) {
+  async create(req, res, next) {
     try {
       const turma = await turmaService.createTurma(req.body);
       return res.status(201).json(turma);
@@ -9,8 +9,7 @@ class TurmaController {
       next(error);
     }
   }
-
-  async list(req, res) {
+  async list(req, res, next) {
     try {
       const turmas = await turmaService.listTurmas();
       return res.status(200).json(turmas);
@@ -18,8 +17,7 @@ class TurmaController {
       next(error);
     }
   }
-
-  async getById(req, res) {
+  async getById(req, res, next) {
     try {
       const turma = await turmaService.getTurmaById(req.params.id);
       return res.status(200).json(turma);
@@ -27,8 +25,7 @@ class TurmaController {
       next(error);
     }
   }
-
-  async listByProfessor(req, res) {
+  async listByProfessor(req, res, next) {
     try {
       const turmas = await turmaService.listTurmasByProfessor(
         req.params.professorId,
@@ -38,8 +35,7 @@ class TurmaController {
       next(error);
     }
   }
-
-  async listByDisciplina(req, res) {
+  async listByDisciplina(req, res, next) {
     try {
       const turmas = await turmaService.listTurmasByDisciplina(
         req.params.disciplinaId,
@@ -49,8 +45,7 @@ class TurmaController {
       next(error);
     }
   }
-
-  async update(req, res) {
+  async update(req, res, next) {
     try {
       const turma = await turmaService.updateTurma(req.params.id, req.body);
       return res.status(200).json(turma);
@@ -58,8 +53,7 @@ class TurmaController {
       next(error);
     }
   }
-
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       await turmaService.deleteTurma(req.params.id);
       return res.status(204).send();

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../services/api";
 import { getTokenPayload } from "../../utils/auth";
 
+const ETAPAS = ["P1", "P2", "P3", "Final"];
+
 export default function LancarNotas() {
   const [turmas, setTurmas] = useState([]);
   const [matriculas, setMatriculas] = useState([]);
@@ -9,7 +11,8 @@ export default function LancarNotas() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
   const [msgSucesso, setMsgSucesso] = useState("");
-  const [form, setForm] = useState({ matriculaId: "", valor: "", etapa: "P1" });
+  const [notas, setNotas] = useState({});
+  const [busca, setBusca] = useState("");
   const payload = getTokenPayload();
 
   useEffect(() => {
@@ -30,23 +33,82 @@ export default function LancarNotas() {
           (d.data || d).filter((m) => m.turmaId === Number(turmaSelecionada)),
         ),
       );
+    setNotas({});
+    setBusca("");
   }, [turmaSelecionada]);
 
-  async function lancarNota(e) {
-    e.preventDefault();
+  const matriculasFiltradas = matriculas.filter((m) =>
+    (m.usuario?.nome || "").toLowerCase().includes(busca.toLowerCase()),
+  );
+
+  function handleNota(matriculaId, etapa, valor) {
+    setNotas((prev) => ({
+      ...prev,
+      [matriculaId]: {
+        ...prev[matriculaId],
+        [etapa]: valor,
+      },
+    }));
+  }
+
+  async function lancarNotas() {
+    setErro("");
+    const lancamentos = [];
+
+    for (const [matriculaId, etapas] of Object.entries(notas)) {
+      for (const [etapa, valor] of Object.entries(etapas)) {
+        if (valor === "" || valor === undefined) continue;
+        const num = Number(valor);
+        if (isNaN(num) || num < 0 || num > 10) {
+          setErro(`Nota inválida para etapa ${etapa}: deve ser entre 0 e 10.`);
+          return;
+        }
+        lancamentos.push({
+          matriculaId: Number(matriculaId),
+          etapa,
+          valor: num,
+        });
+      }
+    }
+
+    if (lancamentos.length === 0) {
+      setErro("Preencha ao menos uma nota antes de salvar.");
+      return;
+    }
+
     try {
-      await api.post("/notas", {
-        matriculaId: Number(form.matriculaId),
-        valor: Number(form.valor),
-        etapa: form.etapa,
-      });
-      setMsgSucesso("Nota lançada com sucesso!");
-      setForm({ matriculaId: "", valor: "", etapa: "P1" });
+      await Promise.all(lancamentos.map((l) => api.post("/notas", l)));
+      setMsgSucesso(`${lancamentos.length} nota(s) lançada(s) com sucesso!`);
+      setNotas({});
       setTimeout(() => setMsgSucesso(""), 3000);
     } catch (err) {
       setErro(err.message);
     }
   }
+
+  const inputBusca = {
+    height: 36,
+    padding: "0 12px",
+    border: "1px solid #ccc",
+    borderRadius: 6,
+    fontSize: 13,
+    fontFamily: "Tahoma, Geneva, sans-serif",
+    width: 300,
+    backgroundColor: "#d9d9d9",
+    color: "#222",
+  };
+
+  const inputNota = {
+    width: 60,
+    height: 30,
+    padding: "0 6px",
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    fontSize: 13,
+    fontFamily: "Tahoma, Geneva, sans-serif",
+    backgroundColor: "#d9d9d9",
+    color: "#222",
+  };
 
   return (
     <div className="view-container">
@@ -74,45 +136,76 @@ export default function LancarNotas() {
             </select>
           </div>
 
-          {turmaSelecionada && (
-            <form className="view-form" onSubmit={lancarNota}>
-              <select
-                value={form.matriculaId}
-                onChange={(e) =>
-                  setForm({ ...form, matriculaId: e.target.value })
-                }
-                required
+          {turmaSelecionada && matriculas.length > 0 && (
+            <>
+              <div style={{ marginBottom: 16 }}>
+                <input
+                  placeholder="Buscar aluno..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  style={inputBusca}
+                />
+              </div>
+
+              <table className="view-table">
+                <thead>
+                  <tr>
+                    <th>Aluno</th>
+                    {ETAPAS.map((e) => (
+                      <th key={e}>{e}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {matriculasFiltradas.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={ETAPAS.length + 1}
+                        style={{ color: "#777", textAlign: "center" }}
+                      >
+                        Nenhum aluno encontrado.
+                      </td>
+                    </tr>
+                  ) : (
+                    matriculasFiltradas.map((m) => (
+                      <tr key={m.id}>
+                        <td>{m.usuario?.nome || `Matrícula #${m.id}`}</td>
+                        {ETAPAS.map((etapa) => (
+                          <td key={etapa}>
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.1"
+                              placeholder="—"
+                              value={notas[m.id]?.[etapa] ?? ""}
+                              onChange={(e) =>
+                                handleNota(m.id, etapa, e.target.value)
+                              }
+                              style={inputNota}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+
+              <button
+                className="btn-primary"
+                style={{ marginTop: 16 }}
+                onClick={lancarNotas}
               >
-                <option value="">Selecione o aluno</option>
-                {matriculas.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.usuario?.nome || `Matrícula #${m.id}`}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="0.1"
-                placeholder="Nota (0-10)"
-                value={form.valor}
-                onChange={(e) => setForm({ ...form, valor: e.target.value })}
-                required
-              />
-              <select
-                value={form.etapa}
-                onChange={(e) => setForm({ ...form, etapa: e.target.value })}
-              >
-                <option value="P1">P1</option>
-                <option value="P2">P2</option>
-                <option value="P3">P3</option>
-                <option value="Final">Final</option>
-              </select>
-              <button type="submit" className="btn-primary">
-                Lançar
+                Salvar Notas
               </button>
-            </form>
+            </>
+          )}
+
+          {turmaSelecionada && matriculas.length === 0 && (
+            <p style={{ color: "#777", fontSize: 13 }}>
+              Nenhum aluno matriculado nesta turma.
+            </p>
           )}
         </>
       )}

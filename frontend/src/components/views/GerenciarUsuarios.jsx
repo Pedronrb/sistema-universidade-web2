@@ -5,14 +5,14 @@ export default function GerenciarUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
+  const [criando, setCriando] = useState(false);
+  const [msgSucesso, setMsgSucesso] = useState("");
   const [form, setForm] = useState({
     nome: "",
     email: "",
     senha: "",
-    papel: "aluno",
+    papelNome: "aluno",
   });
-  const [criando, setCriando] = useState(false);
-  const [msgSucesso, setMsgSucesso] = useState("");
 
   useEffect(() => {
     carregar();
@@ -32,9 +32,14 @@ export default function GerenciarUsuarios() {
   async function criarUsuario(e) {
     e.preventDefault();
     try {
-      await api.post("/users", form);
+      await api.post("/users", {
+        nome: form.nome,
+        email: form.email,
+        senha: form.senha,
+        papelNome: form.papelNome,
+      });
       setMsgSucesso("Usuário criado com sucesso!");
-      setForm({ nome: "", email: "", senha: "", papel: "aluno" });
+      setForm({ nome: "", email: "", senha: "", papelNome: "aluno" });
       setCriando(false);
       carregar();
       setTimeout(() => setMsgSucesso(""), 3000);
@@ -88,8 +93,8 @@ export default function GerenciarUsuarios() {
             required
           />
           <select
-            value={form.papel}
-            onChange={(e) => setForm({ ...form, papel: e.target.value })}
+            value={form.papelNome}
+            onChange={(e) => setForm({ ...form, papelNome: e.target.value })}
           >
             <option value="aluno">Aluno</option>
             <option value="professor">Professor</option>

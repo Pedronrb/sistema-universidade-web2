@@ -8,7 +8,14 @@ export default function GerenciarDisciplinas() {
   const [erro, setErro] = useState("");
   const [msgSucesso, setMsgSucesso] = useState("");
   const [criando, setCriando] = useState(false);
+  const [editando, setEditando] = useState(null);
   const [form, setForm] = useState({
+    nome: "",
+    codigo: "",
+    cargaHoraria: "",
+    cursoId: "",
+  });
+  const [formEdit, setFormEdit] = useState({
     nome: "",
     codigo: "",
     cargaHoraria: "",
@@ -53,6 +60,33 @@ export default function GerenciarDisciplinas() {
     }
   }
 
+  function iniciarEdicao(d) {
+    setEditando(d.id);
+    setFormEdit({
+      nome: d.nome,
+      codigo: d.codigo,
+      cargaHoraria: d.cargaHoraria,
+      cursoId: d.cursoId,
+    });
+  }
+
+  async function salvarEdicao(id) {
+    try {
+      await api.put(`/disciplinas/${id}`, {
+        nome: formEdit.nome,
+        codigo: formEdit.codigo,
+        cargaHoraria: Number(formEdit.cargaHoraria),
+        cursoId: Number(formEdit.cursoId),
+      });
+      setMsgSucesso("Disciplina atualizada com sucesso!");
+      setEditando(null);
+      carregar();
+      setTimeout(() => setMsgSucesso(""), 3000);
+    } catch (err) {
+      setErro(err.message);
+    }
+  }
+
   async function deletarDisciplina(id) {
     if (!confirm("Deseja remover esta disciplina?")) return;
     try {
@@ -62,6 +96,17 @@ export default function GerenciarDisciplinas() {
       setErro(err.message);
     }
   }
+
+  const inputEdit = {
+    height: 30,
+    padding: "0 8px",
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    fontSize: 13,
+    backgroundColor: "#d9d9d9",
+    color: "#222",
+    width: "100%",
+  };
 
   return (
     <div className="view-container">
@@ -78,7 +123,7 @@ export default function GerenciarDisciplinas() {
       {criando && (
         <form className="view-form" onSubmit={criarDisciplina}>
           <input
-            placeholder="Nome da disciplina"
+            placeholder="Nome"
             value={form.nome}
             onChange={(e) => setForm({ ...form, nome: e.target.value })}
             required
@@ -130,17 +175,102 @@ export default function GerenciarDisciplinas() {
           <tbody>
             {disciplinas.map((d) => (
               <tr key={d.id}>
-                <td>{d.nome}</td>
-                <td>{d.codigo}</td>
-                <td>{d.cargaHoraria}h</td>
-                <td>{d.curso?.nome || "—"}</td>
                 <td>
-                  <button
-                    className="btn-danger-sm"
-                    onClick={() => deletarDisciplina(d.id)}
-                  >
-                    Remover
-                  </button>
+                  {editando === d.id ? (
+                    <input
+                      value={formEdit.nome}
+                      onChange={(e) =>
+                        setFormEdit({ ...formEdit, nome: e.target.value })
+                      }
+                      style={inputEdit}
+                    />
+                  ) : (
+                    d.nome
+                  )}
+                </td>
+                <td>
+                  {editando === d.id ? (
+                    <input
+                      value={formEdit.codigo}
+                      onChange={(e) =>
+                        setFormEdit({ ...formEdit, codigo: e.target.value })
+                      }
+                      style={inputEdit}
+                    />
+                  ) : (
+                    d.codigo
+                  )}
+                </td>
+                <td>
+                  {editando === d.id ? (
+                    <input
+                      type="number"
+                      value={formEdit.cargaHoraria}
+                      onChange={(e) =>
+                        setFormEdit({
+                          ...formEdit,
+                          cargaHoraria: e.target.value,
+                        })
+                      }
+                      style={inputEdit}
+                    />
+                  ) : (
+                    `${d.cargaHoraria}h`
+                  )}
+                </td>
+                <td>
+                  {editando === d.id ? (
+                    <select
+                      value={formEdit.cursoId}
+                      onChange={(e) =>
+                        setFormEdit({ ...formEdit, cursoId: e.target.value })
+                      }
+                      style={inputEdit}
+                    >
+                      {cursos.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nome}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    d.curso?.nome || "—"
+                  )}
+                </td>
+                <td style={{ display: "flex", gap: 6 }}>
+                  {editando === d.id ? (
+                    <>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: 12, padding: "4px 10px" }}
+                        onClick={() => salvarEdicao(d.id)}
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        className="btn-danger-sm"
+                        onClick={() => setEditando(null)}
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: 12, padding: "4px 10px" }}
+                        onClick={() => iniciarEdicao(d)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn-danger-sm"
+                        onClick={() => deletarDisciplina(d.id)}
+                      >
+                        Remover
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

@@ -9,6 +9,8 @@ export default function GerenciarTurmas() {
   const [erro, setErro] = useState("");
   const [msgSucesso, setMsgSucesso] = useState("");
   const [criando, setCriando] = useState(false);
+  const [editando, setEditando] = useState(null);
+  const [formEdit, setFormEdit] = useState({ professorId: "" });
   const [form, setForm] = useState({
     codigo: "",
     periodo: "",
@@ -62,6 +64,27 @@ export default function GerenciarTurmas() {
     }
   }
 
+  function iniciarEdicao(t) {
+    setEditando(t.id);
+    setFormEdit({ professorId: t.professorId });
+    setTurmaSelecionada(null);
+    setAlunos([]);
+  }
+
+  async function salvarEdicao(id) {
+    try {
+      await api.put(`/turmas/${id}`, {
+        professorId: Number(formEdit.professorId),
+      });
+      setMsgSucesso("Professor atualizado com sucesso!");
+      setEditando(null);
+      carregar();
+      setTimeout(() => setMsgSucesso(""), 3000);
+    } catch (err) {
+      setErro(err.message);
+    }
+  }
+
   async function deletarTurma(id) {
     if (!confirm("Deseja remover esta turma?")) return;
     try {
@@ -83,6 +106,7 @@ export default function GerenciarTurmas() {
       setBuscaAluno("");
       return;
     }
+    setEditando(null);
     setTurmaSelecionada(turma);
     setBuscaAluno("");
     setLoadingAlunos(true);
@@ -111,11 +135,28 @@ export default function GerenciarTurmas() {
     (m.usuario?.nome || "").toLowerCase().includes(buscaAluno.toLowerCase()),
   );
 
+  const inputEdit = {
+    height: 30,
+    padding: "0 8px",
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    fontSize: 13,
+    backgroundColor: "#d9d9d9",
+    color: "#222",
+    width: "100%",
+  };
+
   return (
     <div className="view-container">
       <div className="view-header">
         <h2>Gerenciar Turmas</h2>
-        <button className="btn-primary" onClick={() => setCriando(!criando)}>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            setCriando(!criando);
+            setEditando(null);
+          }}
+        >
           {criando ? "Cancelar" : "+ Nova Turma"}
         </button>
       </div>
@@ -187,29 +228,78 @@ export default function GerenciarTurmas() {
                 <tr key={t.id}>
                   <td>{t.codigo}</td>
                   <td>
-                    <span
-                      onClick={() => verAlunos(t)}
-                      style={{
-                        color: "#238636",
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                        fontWeight:
-                          turmaSelecionada?.id === t.id ? "bold" : "normal",
-                      }}
-                    >
-                      {t.disciplina?.nome}
-                    </span>
+                    {editando === t.id ? (
+                      t.disciplina?.nome
+                    ) : (
+                      <span
+                        onClick={() => verAlunos(t)}
+                        style={{
+                          color: "#238636",
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                          fontWeight:
+                            turmaSelecionada?.id === t.id ? "bold" : "normal",
+                        }}
+                      >
+                        {t.disciplina?.nome}
+                      </span>
+                    )}
                   </td>
-                  <td>{t.professor?.nome}</td>
+                  <td>
+                    {editando === t.id ? (
+                      <select
+                        value={formEdit.professorId}
+                        onChange={(e) =>
+                          setFormEdit({ professorId: e.target.value })
+                        }
+                        style={inputEdit}
+                      >
+                        {professores.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.nome}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      t.professor?.nome
+                    )}
+                  </td>
                   <td>{t.periodo}</td>
                   <td>{t.matriculas?.length || 0}</td>
-                  <td>
-                    <button
-                      className="btn-danger-sm"
-                      onClick={() => deletarTurma(t.id)}
-                    >
-                      Remover
-                    </button>
+                  <td style={{ display: "flex", gap: 6 }}>
+                    {editando === t.id ? (
+                      <>
+                        <button
+                          className="btn-primary"
+                          style={{ fontSize: 12, padding: "4px 10px" }}
+                          onClick={() => salvarEdicao(t.id)}
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          className="btn-danger-sm"
+                          onClick={() => setEditando(null)}
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="btn-primary"
+                          style={{ fontSize: 12, padding: "4px 10px" }}
+                          onClick={() => iniciarEdicao(t)}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className="btn-danger-sm"
+                          onClick={() => deletarTurma(t.id)}
+                        >
+                          Remover
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

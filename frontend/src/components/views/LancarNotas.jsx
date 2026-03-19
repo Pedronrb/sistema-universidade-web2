@@ -13,6 +13,7 @@ export default function LancarNotas() {
   const [msgSucesso, setMsgSucesso] = useState("");
   const [notas, setNotas] = useState({});
   const [busca, setBusca] = useState("");
+  const [notasExistentes, setNotasExistentes] = useState({});
   const payload = getTokenPayload();
 
   useEffect(() => {
@@ -26,13 +27,20 @@ export default function LancarNotas() {
 
   useEffect(() => {
     if (!turmaSelecionada) return;
-    api
-      .get("/matriculas")
-      .then((d) =>
-        setMatriculas(
-          (d.data || d).filter((m) => m.turmaId === Number(turmaSelecionada)),
-        ),
+    api.get("/matriculas").then(async (d) => {
+      const m = (d.data || d).filter(
+        (m) => m.turmaId === Number(turmaSelecionada),
       );
+      setMatriculas(m);
+      const existentes = {};
+      await Promise.all(
+        m.map(async (mat) => {
+          const n = await api.get(`/notas/matricula/${mat.id}`).catch(() => []);
+          existentes[mat.id] = n.data || n;
+        }),
+      );
+      setNotasExistentes(existentes);
+    });
     setNotas({});
     setBusca("");
   }, [turmaSelecionada]);
@@ -44,17 +52,17 @@ export default function LancarNotas() {
   function handleNota(matriculaId, etapa, valor) {
     setNotas((prev) => ({
       ...prev,
-      [matriculaId]: {
-        ...prev[matriculaId],
-        [etapa]: valor,
-      },
+      [matriculaId]: { ...prev[matriculaId], [etapa]: valor },
     }));
+  }
+
+  function getNotaExistente(matriculaId, etapa) {
+    return notasExistentes[matriculaId]?.find((n) => n.etapa === etapa) || null;
   }
 
   async function lancarNotas() {
     setErro("");
     const lancamentos = [];
-
     for (const [matriculaId, etapas] of Object.entries(notas)) {
       for (const [etapa, valor] of Object.entries(etapas)) {
         if (valor === "" || valor === undefined) continue;
@@ -70,35 +78,67 @@ export default function LancarNotas() {
         });
       }
     }
-
     if (lancamentos.length === 0) {
       setErro("Preencha ao menos uma nota antes de salvar.");
       return;
     }
-
     try {
       await Promise.all(lancamentos.map((l) => api.post("/notas", l)));
       setMsgSucesso(`${lancamentos.length} nota(s) lançada(s) com sucesso!`);
       setNotas({});
+      // Recarrega notas existentes
+      const existentes = {};
+      await Promise.all(
+        matriculas.map(async (mat) => {
+          const n = await api.get(`/notas/matricula/${mat.id}`).catch(() => []);
+          existentes[mat.id] = n.data || n;
+        }),
+      );
+      setNotasExistentes(existentes);
       setTimeout(() => setMsgSucesso(""), 3000);
     } catch (err) {
       setErro(err.message);
     }
   }
 
-  const inputBusca = {
-    height: 36,
-    padding: "0 12px",
-    border: "1px solid #ccc",
-    borderRadius: 6,
-    fontSize: 13,
-    fontFamily: "Tahoma, Geneva, sans-serif",
-    width: 300,
-    backgroundColor: "#d9d9d9",
-    color: "#222",
-  };
+  async function editarNota(notaId, novoValor) {
+    try {
+      await api.put(`/notas/${notaId}`, { valor: Number(novoValor) });
+      setMsgSucesso("Nota atualizada com sucesso!");
+      const existentes = {};
+      await Promise.all(
+        matriculas.map(async (mat) => {
+          const n = await api.get(`/notas/matricula/${mat.id}`).catch(() => []);
+          existentes[mat.id] = n.data || n;
+        }),
+      );
+      setNotasExistentes(existentes);
+      setTimeout(() => setMsgSucesso(""), 3000);
+    } catch (err) {
+      setErro(err.message);
+    }
+  }
 
-  const inputNota = {
+  async function deletarNota(notaId) {
+    if (!confirm("Deseja remover esta nota?")) return;
+    try {
+      await api.delete(`/notas/${notaId}`);
+      setMsgSucesso("Nota removida com sucesso!");
+      const existentes = {};
+      await Promise.all(
+        matriculas.map(async (mat) => {
+          const n = await api.get(`/notas/matricula/${mat.id}`).catch(() => []);
+          existentes[mat.id] = n.data || n;
+        }),
+      );
+      setNotasExistentes(existentes);
+      setTimeout(() => setMsgSucesso(""), 3000);
+    } catch (err) {
+      setErro(err.message);
+    }
+  }
+
+  const inputStyle = {
     width: 60,
     height: 30,
     padding: "0 6px",
@@ -143,7 +183,17 @@ export default function LancarNotas() {
                   placeholder="Buscar aluno..."
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  style={inputBusca}
+                  style={{
+                    height: 36,
+                    padding: "0 12px",
+                    border: "1px solid #ccc",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontFamily: "Tahoma, Geneva, sans-serif",
+                    width: 300,
+                    backgroundColor: "#d9d9d9",
+                    color: "#222",
+                  }}
                 />
               </div>
 
@@ -170,22 +220,56 @@ export default function LancarNotas() {
                     matriculasFiltradas.map((m) => (
                       <tr key={m.id}>
                         <td>{m.usuario?.nome || `Matrícula #${m.id}`}</td>
-                        {ETAPAS.map((etapa) => (
-                          <td key={etapa}>
-                            <input
-                              type="number"
-                              min="0"
-                              max="10"
-                              step="0.1"
-                              placeholder="—"
-                              value={notas[m.id]?.[etapa] ?? ""}
-                              onChange={(e) =>
-                                handleNota(m.id, etapa, e.target.value)
-                              }
-                              style={inputNota}
-                            />
-                          </td>
-                        ))}
+                        {ETAPAS.map((etapa) => {
+                          const notaExistente = getNotaExistente(m.id, etapa);
+                          return (
+                            <td key={etapa}>
+                              {notaExistente ? (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                  }}
+                                >
+                                  <EditableNota
+                                    nota={notaExistente}
+                                    onSave={editarNota}
+                                  />
+                                  <button
+                                    onClick={() =>
+                                      deletarNota(notaExistente.id)
+                                    }
+                                    title="Remover nota"
+                                    style={{
+                                      background: "none",
+                                      border: "none",
+                                      cursor: "pointer",
+                                      color: "#cc4444",
+                                      fontSize: 14,
+                                      padding: 0,
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  placeholder="—"
+                                  value={notas[m.id]?.[etapa] ?? ""}
+                                  onChange={(e) =>
+                                    handleNota(m.id, etapa, e.target.value)
+                                  }
+                                  style={inputStyle}
+                                />
+                              )}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))
                   )}
@@ -210,5 +294,80 @@ export default function LancarNotas() {
         </>
       )}
     </div>
+  );
+}
+
+function EditableNota({ nota, onSave }) {
+  const [editando, setEditando] = useState(false);
+  const [valor, setValor] = useState(nota.valor);
+
+  function salvar() {
+    onSave(nota.id, valor);
+    setEditando(false);
+  }
+
+  if (editando) {
+    return (
+      <div style={{ display: "flex", gap: 4 }}>
+        <input
+          type="number"
+          min="0"
+          max="10"
+          step="0.1"
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          style={{
+            width: 55,
+            height: 28,
+            padding: "0 4px",
+            border: "1px solid #238636",
+            borderRadius: 4,
+            fontSize: 13,
+            backgroundColor: "#d9d9d9",
+            color: "#222",
+          }}
+          autoFocus
+        />
+        <button
+          onClick={salvar}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#238636",
+            fontSize: 16,
+          }}
+        >
+          ✓
+        </button>
+        <button
+          onClick={() => setEditando(false)}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#888",
+            fontSize: 14,
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setEditando(true)}
+      style={{
+        cursor: "pointer",
+        fontWeight: "bold",
+        color: nota.valor >= 5 ? "#238636" : "#cc4444",
+        textDecoration: "underline dotted",
+      }}
+      title="Clique para editar"
+    >
+      {nota.valor}
+    </span>
   );
 }

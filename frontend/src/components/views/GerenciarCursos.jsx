@@ -7,7 +7,9 @@ export default function GerenciarCursos() {
   const [erro, setErro] = useState("");
   const [msgSucesso, setMsgSucesso] = useState("");
   const [criando, setCriando] = useState(false);
+  const [editando, setEditando] = useState(null);
   const [form, setForm] = useState({ nome: "", descricao: "" });
+  const [formEdit, setFormEdit] = useState({ nome: "", descricao: "" });
 
   useEffect(() => {
     carregar();
@@ -31,6 +33,23 @@ export default function GerenciarCursos() {
       setMsgSucesso("Curso criado com sucesso!");
       setForm({ nome: "", descricao: "" });
       setCriando(false);
+      carregar();
+      setTimeout(() => setMsgSucesso(""), 3000);
+    } catch (err) {
+      setErro(err.message);
+    }
+  }
+
+  function iniciarEdicao(curso) {
+    setEditando(curso.id);
+    setFormEdit({ nome: curso.nome, descricao: curso.descricao || "" });
+  }
+
+  async function salvarEdicao(id) {
+    try {
+      await api.put(`/cursos/${id}`, formEdit);
+      setMsgSucesso("Curso atualizado com sucesso!");
+      setEditando(null);
       carregar();
       setTimeout(() => setMsgSucesso(""), 3000);
     } catch (err) {
@@ -93,15 +112,82 @@ export default function GerenciarCursos() {
           <tbody>
             {cursos.map((c) => (
               <tr key={c.id}>
-                <td>{c.nome}</td>
-                <td>{c.descricao || "—"}</td>
                 <td>
-                  <button
-                    className="btn-danger-sm"
-                    onClick={() => deletarCurso(c.id)}
-                  >
-                    Remover
-                  </button>
+                  {editando === c.id ? (
+                    <input
+                      value={formEdit.nome}
+                      onChange={(e) =>
+                        setFormEdit({ ...formEdit, nome: e.target.value })
+                      }
+                      style={{
+                        height: 30,
+                        padding: "0 8px",
+                        border: "1px solid #ccc",
+                        borderRadius: 4,
+                        fontSize: 13,
+                        backgroundColor: "#d9d9d9",
+                        color: "#222",
+                      }}
+                    />
+                  ) : (
+                    c.nome
+                  )}
+                </td>
+                <td>
+                  {editando === c.id ? (
+                    <input
+                      value={formEdit.descricao}
+                      onChange={(e) =>
+                        setFormEdit({ ...formEdit, descricao: e.target.value })
+                      }
+                      style={{
+                        height: 30,
+                        padding: "0 8px",
+                        border: "1px solid #ccc",
+                        borderRadius: 4,
+                        fontSize: 13,
+                        backgroundColor: "#d9d9d9",
+                        color: "#222",
+                      }}
+                    />
+                  ) : (
+                    c.descricao || "—"
+                  )}
+                </td>
+                <td style={{ display: "flex", gap: 6 }}>
+                  {editando === c.id ? (
+                    <>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: 12, padding: "4px 10px" }}
+                        onClick={() => salvarEdicao(c.id)}
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        className="btn-danger-sm"
+                        onClick={() => setEditando(null)}
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: 12, padding: "4px 10px" }}
+                        onClick={() => iniciarEdicao(c)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn-danger-sm"
+                        onClick={() => deletarCurso(c.id)}
+                      >
+                        Remover
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

@@ -14,6 +14,7 @@ async function request(method, path, body) {
     headers: getHeaders(),
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (res.status === 204) return null;
   const data = await res.json();
   if (!res.ok)
     throw new Error(data.message || data.error || "Erro na requisição");

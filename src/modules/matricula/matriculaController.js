@@ -62,7 +62,7 @@ class MatriculaController {
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       await matriculaService.deleteMatricula(req.params.id);
       return res.status(204).send();
